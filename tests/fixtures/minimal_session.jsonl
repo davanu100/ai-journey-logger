@@ -1,0 +1,3 @@
+{"type": "progress", "data": {"type": "hook_progress", "hookEvent": "SessionStart"}, "sessionId": "sess-min", "timestamp": "2026-03-20T10:00:00Z"}
+{"type": "user", "message": {"role": "user", "content": "What is Python?"}, "sessionId": "sess-min", "timestamp": "2026-03-20T10:00:01Z"}
+{"type": "assistant", "message": {"model": "claude-sonnet-4-6", "role": "assistant", "content": [{"type": "text", "text": "Python is a programming language."}]}, "sessionId": "sess-min", "timestamp": "2026-03-20T10:00:02Z"}

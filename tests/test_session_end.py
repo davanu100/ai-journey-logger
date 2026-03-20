@@ -68,7 +68,9 @@ def test_session_end_pushes_to_notion(tmp_journey_dir, sample_hook_input):
                 with patch("hooks.session_end.datetime") as mock_dt:
                     mock_dt.now.return_value.astimezone.return_value = fake_now
                     mock_dt.fromisoformat = real_datetime.fromisoformat
-                    run_session_end(sample_hook_input)
+                    with patch("hooks.session_end.parse_transcript", return_value={"initial_prompt": "", "model": "", "message_count": 0, "tools_used": [], "skills_invoked": [], "skill_counts": [], "agents_dispatched": [], "agent_counts": []}):
+                        with patch("hooks.session_end.get_skills_snapshot", return_value=[]):
+                            run_session_end(sample_hook_input)
 
     mock_client.pages.create.assert_called_once()
     call_kwargs = mock_client.pages.create.call_args[1]
@@ -89,7 +91,9 @@ def test_session_end_skips_if_no_state_file(tmp_journey_dir, sample_hook_input):
             notion_token="ntn_test",
             notion_database_id="db-123",
         )
-        run_session_end(sample_hook_input)
+        with patch("hooks.session_end.parse_transcript", return_value={"initial_prompt": "", "model": "", "message_count": 0, "tools_used": [], "skills_invoked": [], "skill_counts": [], "agents_dispatched": [], "agent_counts": []}):
+            with patch("hooks.session_end.get_skills_snapshot", return_value=[]):
+                run_session_end(sample_hook_input)
 
 
 def test_session_end_skips_if_no_notion_token(tmp_journey_dir, sample_hook_input):
@@ -112,6 +116,8 @@ def test_session_end_skips_if_no_notion_token(tmp_journey_dir, sample_hook_input
             mock_dt.now.return_value.astimezone.return_value = fake_now
             mock_dt.fromisoformat = real_datetime.fromisoformat
             with patch("hooks.session_end.gather_commits", return_value=""):
-                run_session_end(sample_hook_input)
+                with patch("hooks.session_end.parse_transcript", return_value={"initial_prompt": "", "model": "", "message_count": 0, "tools_used": [], "skills_invoked": [], "skill_counts": [], "agents_dispatched": [], "agent_counts": []}):
+                    with patch("hooks.session_end.get_skills_snapshot", return_value=[]):
+                        run_session_end(sample_hook_input)
 
     assert not state_file.exists()

@@ -81,14 +81,24 @@ def main():
         "blog_summary": {"rich_text": {}},
     }
 
+    # Step 1: Create database with default title property
     response = notion.databases.create(
         parent={"type": "page_id", "page_id": parent_page_id},
         title=[{"type": "text", "text": {"content": "AI Journey Log"}}],
-        properties=properties,
+        properties={},
     )
 
     db_id = response["id"]
-    print(f"Database created successfully!")
+    print(f"Database created: {db_id}")
+
+    # Step 2: Rename default "Name" title to "session_id" and add all properties
+    # (notion-client v3 / API 2022-06-28 doesn't support custom title in create)
+    properties["Name"] = properties.pop("session_id")
+    properties["Name"]["name"] = "session_id"
+
+    notion.databases.update(database_id=db_id, properties=properties)
+
+    print(f"Database schema configured successfully!")
     print(f"Database ID: {db_id}")
     print(f"")
     print(f"Add to your environment:")

@@ -79,6 +79,7 @@ def main():
         "satisfaction": {"number": {"format": "number"}},
         "publish": {"checkbox": {}},
         "blog_summary": {"rich_text": {}},
+        "notes": {"rich_text": {}},
     }
 
     # Step 1: Create database with default title property

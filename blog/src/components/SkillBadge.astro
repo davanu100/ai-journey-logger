@@ -1,0 +1,18 @@
+---
+interface Props {
+  name: string;
+  variant?: 'tool' | 'skill' | 'agent';
+}
+
+const { name, variant = 'skill' } = Astro.props;
+
+const colors = {
+  tool: 'bg-blue-900/40 text-blue-300 border-blue-800',
+  skill: 'bg-purple-900/40 text-purple-300 border-purple-800',
+  agent: 'bg-green-900/40 text-green-300 border-green-800',
+};
+---
+
+<span class:list={['inline-block px-2 py-0.5 rounded text-xs font-mono border', colors[variant]]}>
+  {name}
+</span>

@@ -1,0 +1,20 @@
+---
+const currentPath = Astro.url.pathname;
+
+function isActive(path: string): boolean {
+  if (path === '/') return currentPath === '/';
+  return currentPath.startsWith(path);
+}
+---
+
+<nav class="border-b border-border px-6 py-4 flex items-center gap-6">
+  <a href="/" class:list={['font-semibold', isActive('/') ? 'text-accent' : 'text-muted hover:text-text']}>
+    Home
+  </a>
+  <a href="/skills" class:list={[isActive('/skills') ? 'text-accent' : 'text-muted hover:text-text']}>
+    Skills
+  </a>
+  <a href="/stats" class:list={[isActive('/stats') ? 'text-accent' : 'text-muted hover:text-text']}>
+    Stats
+  </a>
+</nav>

@@ -1,0 +1,40 @@
+---
+import type { JourneyPost } from '../lib/notion';
+
+interface Props {
+  post: JourneyPost;
+}
+
+const { post } = Astro.props;
+
+const categoryColors: Record<string, string> = {
+  debugging: 'text-red-400',
+  feature: 'text-blue-400',
+  refactor: 'text-yellow-400',
+  brainstorming: 'text-purple-400',
+  learning: 'text-green-400',
+};
+
+const dots = Array.from({ length: 5 }, (_, i) => i < post.satisfaction);
+const summaryPreview = post.blog_summary.length > 120
+  ? post.blog_summary.slice(0, 120) + '…'
+  : post.blog_summary;
+---
+
+<a href={`/posts/${post.session_id}`} class="block p-4 rounded-lg bg-surface border border-border hover:border-accent/40 transition-colors">
+  <div class="flex items-center gap-3 mb-2 text-sm">
+    <time class="text-muted">{post.date}</time>
+    <span class="font-mono text-muted">{post.project}</span>
+    {post.category && (
+      <span class:list={['text-xs uppercase tracking-wide', categoryColors[post.category] ?? 'text-muted']}>
+        {post.category}
+      </span>
+    )}
+  </div>
+  <p class="text-text text-sm leading-relaxed mb-2">{summaryPreview}</p>
+  <div class="flex items-center gap-1">
+    {dots.map((filled) => (
+      <span class:list={['w-1.5 h-1.5 rounded-full', filled ? 'bg-accent' : 'bg-border']} />
+    ))}
+  </div>
+</a>

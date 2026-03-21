@@ -1,0 +1,42 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getPublishedPosts } from '../../lib/notion';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  const pageSize = 10;
+  const totalPages = Math.ceil(posts.length / pageSize);
+
+  // Page 1 is handled by index.astro, start from page 2
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => {
+    const pageNum = i + 2;
+    const start = (pageNum - 1) * pageSize;
+    return {
+      params: { page: String(pageNum) },
+      props: {
+        posts: posts.slice(start, start + pageSize),
+        currentPage: pageNum,
+        totalPages,
+      },
+    };
+  });
+}
+
+const { posts, currentPage, totalPages } = Astro.props;
+const prevPage = currentPage === 2 ? '/' : `/page/${currentPage - 1}`;
+const nextPage = currentPage < totalPages ? `/page/${currentPage + 1}` : null;
+---
+
+<Base title={`Page ${currentPage}`}>
+  <h1 class="text-2xl font-semibold mb-6">AI Journey Log — Page {currentPage}</h1>
+
+  <div class="space-y-4">
+    {posts.map((post) => <PostCard post={post} />)}
+  </div>
+
+  <nav class="mt-8 flex justify-between">
+    <a href={prevPage} class="text-accent hover:text-accent-hover">← Newer</a>
+    {nextPage && <a href={nextPage} class="text-accent hover:text-accent-hover">Older →</a>}
+  </nav>
+</Base>

@@ -1,8 +1,27 @@
 ---
 import Base from '../layouts/Base.astro';
+import PostCard from '../components/PostCard.astro';
+import { getPublishedPosts } from '../lib/notion';
+
+const posts = await getPublishedPosts();
+const firstPage = posts.slice(0, 10);
+const hasMore = posts.length > 10;
 ---
 
 <Base title="Home">
-  <h1 class="text-2xl font-semibold mb-4">AI Journey Log</h1>
-  <p class="text-muted">Posts will appear here once connected to Notion.</p>
+  <h1 class="text-2xl font-semibold mb-6">AI Journey Log</h1>
+
+  {firstPage.length === 0 ? (
+    <p class="text-muted">No published posts yet. Mark an entry as publish=true in Notion.</p>
+  ) : (
+    <div class="space-y-4">
+      {firstPage.map((post) => <PostCard post={post} />)}
+    </div>
+  )}
+
+  {hasMore && (
+    <div class="mt-8 text-center">
+      <a href="/page/2" class="text-accent hover:text-accent-hover">Older posts →</a>
+    </div>
+  )}
 </Base>

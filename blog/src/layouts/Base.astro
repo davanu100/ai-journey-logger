@@ -1,0 +1,36 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'AI Journey Log — a developer blog about working with Claude Code' } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title} | AI Journey Log</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-bg text-text min-h-screen font-sans">
+    <nav class="border-b border-border px-6 py-4 flex items-center gap-6">
+      <a href="/" class="text-accent font-semibold hover:text-accent-hover">Home</a>
+      <a href="/skills" class="text-muted hover:text-text">Skills</a>
+      <a href="/stats" class="text-muted hover:text-text">Stats</a>
+    </nav>
+    <main class="max-w-3xl mx-auto px-6 py-10">
+      <slot />
+    </main>
+    <footer class="border-t border-border px-6 py-6 text-center text-muted text-sm">
+      AI Journey Log — built with Astro & Claude Code
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+---
+import Base from '../../layouts/Base.astro';
+import MetadataSidebar from '../../components/MetadataSidebar.astro';
+import { getPublishedPosts } from '../../lib/notion';
+import type { JourneyPost } from '../../lib/notion';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  return posts.map((post) => ({
+    params: { slug: post.session_id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props as { post: JourneyPost };
+
+const commitLines = post.commits
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line.length > 0);
+---
+
+<Base title={`${post.project} — ${post.date}`}>
+  <article>
+    <header class="mb-8">
+      <time class="text-muted text-sm">{post.date}</time>
+      <span class="text-muted text-sm mx-2">·</span>
+      <span class="font-mono text-sm text-muted">{post.project}</span>
+      <hr class="border-border mt-4" />
+    </header>
+
+    <div class="mb-8">
+      <p class="text-text leading-relaxed whitespace-pre-line">{post.blog_summary}</p>
+    </div>
+
+    {post.notes && (
+      <div class="mb-8 pl-4 border-l-2 border-accent/40">
+        <h2 class="text-sm font-semibold text-muted uppercase tracking-wide mb-2">Notes</h2>
+        <p class="text-text leading-relaxed whitespace-pre-line">{post.notes}</p>
+      </div>
+    )}
+
+    <MetadataSidebar post={post} />
+
+    {commitLines.length > 0 && (
+      <div class="mt-6">
+        <h2 class="text-sm font-semibold text-muted uppercase tracking-wide mb-2">Commits</h2>
+        <ul class="space-y-1">
+          {commitLines.map((line) => (
+            <li class="text-sm font-mono text-muted">• {line}</li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    <div class="mt-10">
+      <a href="/" class="text-accent hover:text-accent-hover text-sm">← Back to all posts</a>
+    </div>
+  </article>
+</Base>

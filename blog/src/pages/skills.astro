@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import SkillBadge from '../components/SkillBadge.astro';
+import { getAllSkills } from '../lib/notion';
+
+const skills = await getAllSkills();
+---
+
+<Base title="Skills">
+  <h1 class="text-2xl font-semibold mb-6">Skill Directory</h1>
+
+  {skills.length === 0 ? (
+    <p class="text-muted">No skills tracked yet.</p>
+  ) : (
+    <div class="space-y-3">
+      {skills.map((skill) => (
+        <div class="p-4 bg-surface border border-border rounded-lg flex items-center justify-between">
+          <div>
+            <SkillBadge name={skill.name} variant="skill" />
+            <span class="text-muted text-xs ml-3">
+              Last used: {skill.lastUsed}
+            </span>
+          </div>
+          <div class="text-right">
+            <span class="text-text font-mono">{skill.count}×</span>
+            <span class="text-muted text-xs block">
+              {skill.projects.join(', ')}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</Base>

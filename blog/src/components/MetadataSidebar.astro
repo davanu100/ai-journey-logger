@@ -1,5 +1,4 @@
 ---
-import SkillBadge from './SkillBadge.astro';
 import type { JourneyPost } from '../lib/notion';
 
 interface Props {
@@ -8,62 +7,37 @@ interface Props {
 
 const { post } = Astro.props;
 
-const dots = Array.from({ length: 5 }, (_, i) => i < post.satisfaction);
+const satisfactionDots = Array.from({ length: 5 }, (_, i) => i < post.satisfaction);
 ---
 
-<div class="bg-surface border border-border rounded-lg p-4 space-y-4">
+<div class="mt-8 p-4 bg-surface rounded border border-border">
+  <h2 class="text-sm font-semibold text-muted uppercase tracking-wide mb-3">Session Stats</h2>
   <div class="grid grid-cols-2 gap-3 text-sm">
     <div>
       <span class="text-muted">Model</span>
-      <p class="font-mono">{post.model || '—'}</p>
+      <span class="block font-mono text-text">{post.model}</span>
     </div>
     <div>
       <span class="text-muted">Duration</span>
-      <p>{post.duration_minutes} min</p>
-    </div>
-    <div>
-      <span class="text-muted">Category</span>
-      <p>{post.category || '—'}</p>
+      <span class="block font-mono text-text">{post.duration_minutes} min</span>
     </div>
     <div>
       <span class="text-muted">Messages</span>
-      <p>{post.message_count}</p>
+      <span class="block font-mono text-text">{post.message_count}</span>
+    </div>
+    <div>
+      <span class="text-muted">Category</span>
+      <span class="block font-mono text-text">{post.category}</span>
     </div>
   </div>
-
-  <div>
-    <span class="text-muted text-sm">Satisfaction</span>
-    <div class="flex items-center gap-1 mt-1">
-      {dots.map((filled) => (
-        <span class:list={['w-2 h-2 rounded-full', filled ? 'bg-accent' : 'bg-border']} />
-      ))}
-    </div>
+  <div class="mt-3 flex items-center gap-1">
+    <span class="text-muted text-sm mr-2">Satisfaction</span>
+    {satisfactionDots.map((filled) => (
+      <span class={`w-2 h-2 rounded-full ${filled ? 'bg-accent' : 'bg-border'}`}></span>
+    ))}
   </div>
-
-  {post.tools_used.length > 0 && (
-    <div>
-      <span class="text-muted text-sm">Tools</span>
-      <div class="flex flex-wrap gap-1 mt-1">
-        {post.tools_used.map((t) => <SkillBadge name={t} variant="tool" />)}
-      </div>
-    </div>
-  )}
-
-  {post.skills_invoked.length > 0 && (
-    <div>
-      <span class="text-muted text-sm">Skills</span>
-      <div class="flex flex-wrap gap-1 mt-1">
-        {post.skills_invoked.map((s) => <SkillBadge name={s} variant="skill" />)}
-      </div>
-    </div>
-  )}
-
-  {post.agents_dispatched.length > 0 && (
-    <div>
-      <span class="text-muted text-sm">Agents</span>
-      <div class="flex flex-wrap gap-1 mt-1">
-        {post.agents_dispatched.map((a) => <SkillBadge name={a} variant="agent" />)}
-      </div>
-    </div>
-  )}
+  <!-- Compact counts for tools/skills/agents -->
+  <div class="mt-3 text-xs text-muted">
+    {post.tools_used.length} tools · {post.skills_invoked.length} skills · {post.agents_dispatched.length} agents
+  </div>
 </div>

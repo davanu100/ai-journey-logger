@@ -1,7 +1,9 @@
 ---
 import Base from '../../layouts/Base.astro';
 import MetadataSidebar from '../../components/MetadataSidebar.astro';
-import { getPublishedPosts } from '../../lib/notion';
+import Timeline from '../../components/Timeline.astro';
+import { getPublishedPosts, parseTimeline } from '../../lib/notion';
+import { generateNarrative } from '../../lib/narrative';
 import type { JourneyPost } from '../../lib/notion';
 
 export async function getStaticPaths() {
@@ -13,6 +15,8 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props as { post: JourneyPost };
+const timelineEvents = parseTimeline(post.session_timeline);
+const narrative = generateNarrative(post, timelineEvents);
 
 const commitLines = post.commits
   .split('\n')
@@ -22,17 +26,35 @@ const commitLines = post.commits
 
 <Base title={`${post.project} — ${post.date}`}>
   <article>
-    <header class="mb-8">
+    <header class="mb-6">
       <time class="text-muted text-sm">{post.date}</time>
       <span class="text-muted text-sm mx-2">·</span>
       <span class="font-mono text-sm text-muted">{post.project}</span>
       <hr class="border-border mt-4" />
     </header>
 
-    <div class="mb-8">
-      <p class="text-text leading-relaxed whitespace-pre-line">{post.blog_summary}</p>
+    <!-- Auto-narrative -->
+    <div class="mb-6">
+      <p class="text-text leading-relaxed">{narrative}</p>
     </div>
 
+    <!-- Blog summary (author's take) -->
+    {post.blog_summary && (
+      <blockquote class="mb-6 pl-4 border-l-2 border-muted/30 text-muted leading-relaxed">
+        {post.blog_summary}
+      </blockquote>
+    )}
+
+    <!-- Visual timeline -->
+    {timelineEvents.length > 0 && (
+      <Timeline
+        events={timelineEvents}
+        commits={post.commits}
+        durationMinutes={post.duration_minutes}
+      />
+    )}
+
+    <!-- Notes -->
     {post.notes && (
       <div class="mb-8 pl-4 border-l-2 border-accent/40">
         <h2 class="text-sm font-semibold text-muted uppercase tracking-wide mb-2">Notes</h2>
@@ -40,9 +62,11 @@ const commitLines = post.commits
       </div>
     )}
 
+    <!-- Session stats -->
     <MetadataSidebar post={post} />
 
-    {commitLines.length > 0 && (
+    <!-- Commits (shown when no timeline — fallback for older sessions) -->
+    {timelineEvents.length === 0 && commitLines.length > 0 && (
       <div class="mt-6">
         <h2 class="text-sm font-semibold text-muted uppercase tracking-wide mb-2">Commits</h2>
         <ul class="space-y-1">

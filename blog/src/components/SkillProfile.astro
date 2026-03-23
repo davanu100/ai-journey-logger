@@ -1,0 +1,66 @@
+---
+import type { SkillStats } from '../lib/notion';
+
+interface Props {
+  skill: SkillStats;
+}
+
+const { skill } = Astro.props;
+
+const labelStyles: Record<string, string> = {
+  hot: 'text-red-400 bg-red-900/30 border-red-800',
+  cold: 'text-blue-400 bg-blue-900/30 border-blue-800',
+};
+
+const displaySessions = skill.sessions.slice(-5);
+const extraCount = skill.sessions.length - displaySessions.length;
+
+const satisfactionDots = Array.from({ length: 5 }, (_, i) =>
+  i < Math.round(skill.avgSatisfaction)
+);
+---
+
+<div class="p-4 bg-surface rounded border border-border">
+  <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center gap-2">
+      <span class="text-purple-400 font-mono text-sm font-semibold">{skill.name}</span>
+    </div>
+    {skill.label && (
+      <span class={`text-xs px-1.5 py-0.5 rounded border ${labelStyles[skill.label]}`}>
+        {skill.label === 'hot' ? '↑ HOT' : '↓ COLD'}
+      </span>
+    )}
+  </div>
+
+  <div class="text-sm text-muted mb-1">
+    Used {skill.count}× across {skill.projects.length} project{skill.projects.length === 1 ? '' : 's'}
+  </div>
+
+  <div class="flex items-center gap-3 text-sm text-muted mb-2">
+    <div class="flex items-center gap-1">
+      <span>Avg:</span>
+      {satisfactionDots.map((filled) => (
+        <span class={`w-1.5 h-1.5 rounded-full ${filled ? 'bg-accent' : 'bg-border'}`}></span>
+      ))}
+    </div>
+    <span>·</span>
+    <span>Last: {skill.lastUsed}</span>
+  </div>
+
+  <div class="text-xs text-muted mb-1">
+    <span class="text-muted/70">Projects:</span> {skill.projects.join(', ')}
+  </div>
+
+  <div class="text-xs text-muted">
+    <span class="text-muted/70">Sessions:</span>
+    {displaySessions.map((sid, i) => (
+      <>
+        <a href={`/posts/${sid}`} class="text-accent hover:text-accent-hover">{sid}</a>
+        {i < displaySessions.length - 1 && ', '}
+      </>
+    ))}
+    {extraCount > 0 && (
+      <span class="text-muted/50"> +{extraCount} more</span>
+    )}
+  </div>
+</div>

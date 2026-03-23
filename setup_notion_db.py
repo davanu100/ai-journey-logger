@@ -44,6 +44,7 @@ def main():
         "skills_created": {"rich_text": {}},
         "agents_dispatched": {"multi_select": {"options": []}},
         "agent_counts": {"rich_text": {}},
+        "session_timeline": {"rich_text": {}},
         "message_count": {"number": {"format": "number"}},
         "model_fit": {
             "select": {

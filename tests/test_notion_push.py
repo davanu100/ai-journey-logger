@@ -116,3 +116,29 @@ def test_retry_pending_partial_failure(tmp_journey_dir):
 def test_retry_pending_noop_if_no_file(mock_notion_client, tmp_journey_dir):
     pending_file = tmp_journey_dir / "pending.jsonl"
     retry_pending(mock_notion_client, pending_file)
+
+
+def test_build_properties_includes_session_timeline():
+    entry = {
+        "session_id": "sess-001",
+        "date": "2026-03-19",
+        "project": "my-app",
+        "commits": "",
+        "duration_minutes": 10,
+        "timeline": '[{"ty":"p","tx":"hello","t":0}]',
+    }
+    props = build_properties(entry)
+    assert "session_timeline" in props
+    assert props["session_timeline"]["rich_text"][0]["text"]["content"] == '[{"ty":"p","tx":"hello","t":0}]'
+
+
+def test_build_properties_empty_timeline():
+    entry = {
+        "session_id": "sess-001",
+        "date": "2026-03-19",
+        "project": "my-app",
+        "commits": "",
+        "duration_minutes": 10,
+    }
+    props = build_properties(entry)
+    assert props["session_timeline"]["rich_text"][0]["text"]["content"] == ""

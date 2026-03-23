@@ -29,6 +29,7 @@ def build_properties(entry: dict) -> dict:
         "skills_created": {"rich_text": [{"text": {"content": entry.get("skills_created", "")}}]},
         "agents_dispatched": {"multi_select": [{"name": a} for a in entry.get("agents_dispatched", [])]},
         "agent_counts": {"rich_text": [{"text": {"content": json.dumps(entry.get("agent_counts", []))}}]},
+        "session_timeline": {"rich_text": [{"text": {"content": entry.get("timeline", "")}}]},
         "message_count": {"number": entry.get("message_count", 0)},
     }
 

@@ -1,0 +1,36 @@
+---
+interface Props {
+  type: 'p' | 't' | 's' | 'a' | 'commit' | 'end';
+  minutes: number;
+  label: string;
+  sublabel?: string;
+}
+
+const { type, minutes, label, sublabel } = Astro.props;
+
+const dotColors: Record<string, string> = {
+  p: 'bg-muted',
+  t: 'bg-blue-500',
+  s: 'bg-purple-500',
+  a: 'bg-green-500',
+  commit: 'bg-yellow-500',
+  end: 'bg-muted/50',
+};
+
+const dotColor = dotColors[type] || 'bg-muted';
+---
+
+<div class="flex items-start gap-4 relative">
+  <div class="w-14 text-right shrink-0">
+    <span class="font-mono text-xs text-muted">{minutes} min</span>
+  </div>
+  <div class="flex flex-col items-center shrink-0">
+    <div class={`w-3 h-3 rounded-full ${dotColor} ring-2 ring-bg z-10`}></div>
+  </div>
+  <div class="pb-6 min-w-0">
+    <span class="text-sm text-text">{label}</span>
+    {sublabel && (
+      <span class="block text-xs text-muted mt-0.5">{sublabel}</span>
+    )}
+  </div>
+</div>

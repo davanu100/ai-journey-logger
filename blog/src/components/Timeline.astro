@@ -1,0 +1,95 @@
+---
+import TimelineEvent from './TimelineEvent.astro';
+import type { TimelineEvent as TEvent } from '../lib/notion';
+
+interface Props {
+  events: TEvent[];
+  commits: string;
+  durationMinutes: number;
+}
+
+const { events, commits, durationMinutes } = Astro.props;
+
+type DisplayEvent = {
+  type: 'p' | 't' | 's' | 'a' | 'commit' | 'end';
+  minutes: number;
+  label: string;
+  sublabel?: string;
+};
+
+const displayEvents: DisplayEvent[] = [];
+
+for (const evt of events) {
+  switch (evt.ty) {
+    case 'p':
+      displayEvents.push({
+        type: 'p',
+        minutes: evt.t,
+        label: `"${evt.tx || '...'}"`,
+      });
+      break;
+    case 't':
+      displayEvents.push({
+        type: 't',
+        minutes: evt.t,
+        label: evt.n || 'tool',
+      });
+      break;
+    case 's':
+      displayEvents.push({
+        type: 's',
+        minutes: evt.t,
+        label: evt.n || 'skill',
+      });
+      break;
+    case 'a':
+      displayEvents.push({
+        type: 'a',
+        minutes: evt.t,
+        label: evt.n || 'agent',
+        sublabel: evt.d,
+      });
+      break;
+  }
+}
+
+const commitLines = commits
+  .split('\n')
+  .map(l => l.trim())
+  .filter(l => l.length > 0);
+
+const lastEventTime = displayEvents.length > 0
+  ? displayEvents[displayEvents.length - 1].minutes
+  : 0;
+const commitTime = Math.max(lastEventTime + 1, durationMinutes - 2);
+
+for (const line of commitLines) {
+  displayEvents.push({
+    type: 'commit',
+    minutes: commitTime,
+    label: line,
+  });
+}
+
+displayEvents.push({
+  type: 'end',
+  minutes: durationMinutes,
+  label: 'Session ended',
+});
+---
+
+<div class="my-8">
+  <h2 class="text-sm font-semibold text-muted uppercase tracking-wide mb-4">Timeline</h2>
+  <div class="relative ml-[4.25rem] border-l border-border -translate-x-[0.4375rem]">
+    <div class="-ml-[4.25rem] translate-x-[0.4375rem]">
+      {displayEvents.map((evt) => (
+        <TimelineEvent
+          type={evt.type}
+          minutes={evt.minutes}
+          label={evt.label}
+          sublabel={evt.sublabel}
+        />
+      ))}
+    </div>
+  </div>
+</div>

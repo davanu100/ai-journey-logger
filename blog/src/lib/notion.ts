@@ -9,6 +9,14 @@ const databaseId = import.meta.env.NOTION_DATABASE_ID;
 
 // --- Types ---
 
+export interface TimelineEvent {
+  ty: 'p' | 't' | 's' | 'a';
+  t: number;
+  n?: string;
+  tx?: string;
+  d?: string;
+}
+
 export interface JourneyPost {
   session_id: string;
   date: string;
@@ -24,6 +32,7 @@ export interface JourneyPost {
   commits: string;
   satisfaction: number;
   message_count: number;
+  session_timeline: string;
 }
 
 export interface SkillStats {
@@ -31,6 +40,9 @@ export interface SkillStats {
   count: number;
   lastUsed: string;
   projects: string[];
+  avgSatisfaction: number;
+  sessions: string[];
+  label: 'hot' | 'cold' | null;
 }
 
 // --- Helpers ---
@@ -74,6 +86,17 @@ function sanitizeCommits(raw: string): string {
     .trim();
 }
 
+export function parseTimeline(raw: string | null | undefined): TimelineEvent[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
+  } catch {
+    return [];
+  }
+}
+
 // --- API ---
 
 /** Fetch all pages from the database, handling pagination */
@@ -114,6 +137,7 @@ function pageToPost(page: PageObjectResponse): JourneyPost {
     commits: sanitizeCommits(richText(p.commits)),
     satisfaction: numberVal(p.satisfaction),
     message_count: numberVal(p.message_count),
+    session_timeline: richText(p.session_timeline),
   };
 }
 
@@ -127,27 +151,54 @@ export async function getPublishedPosts(): Promise<JourneyPost[]> {
 
 export async function getAllSkills(): Promise<SkillStats[]> {
   const posts = await getPublishedPosts();
-  const map = new Map<string, { count: number; lastUsed: string; projects: Set<string> }>();
+  const map = new Map<string, {
+    count: number;
+    lastUsed: string;
+    projects: Set<string>;
+    satisfactions: number[];
+    sessions: string[];
+    dates: string[];
+  }>();
 
   for (const post of posts) {
     for (const skill of post.skills_invoked) {
-      const existing = map.get(skill);
-      if (existing) {
-        existing.count++;
-        if (post.date > existing.lastUsed) existing.lastUsed = post.date;
-        existing.projects.add(post.project);
-      } else {
-        map.set(skill, { count: 1, lastUsed: post.date, projects: new Set([post.project]) });
+      let entry = map.get(skill);
+      if (!entry) {
+        entry = { count: 0, lastUsed: '', projects: new Set(), satisfactions: [], sessions: [], dates: [] };
+        map.set(skill, entry);
       }
+      entry.count++;
+      if (post.date > entry.lastUsed) entry.lastUsed = post.date;
+      entry.projects.add(post.project);
+      if (post.satisfaction > 0) entry.satisfactions.push(post.satisfaction);
+      entry.sessions.push(post.session_id);
+      entry.dates.push(post.date);
     }
   }
 
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
   return Array.from(map.entries())
-    .map(([name, data]) => ({
-      name,
-      count: data.count,
-      lastUsed: data.lastUsed,
-      projects: Array.from(data.projects).sort(),
-    }))
+    .map(([name, s]) => {
+      const avgSatisfaction = s.satisfactions.length > 0
+        ? Math.round((s.satisfactions.reduce((a, b) => a + b, 0) / s.satisfactions.length) * 10) / 10
+        : 0;
+      const recentDates = s.dates.filter(d => d >= sevenDaysAgo);
+      const label: 'hot' | 'cold' | null =
+        recentDates.length >= 3 ? 'hot' :
+        s.lastUsed < fourteenDaysAgo ? 'cold' :
+        null;
+      return {
+        name,
+        count: s.count,
+        lastUsed: s.lastUsed,
+        projects: [...s.projects].sort(),
+        avgSatisfaction,
+        sessions: s.sessions.slice(-10),
+        label,
+      };
+    })
     .sort((a, b) => b.count - a.count);
 }
